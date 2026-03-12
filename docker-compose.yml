@@ -33,6 +33,8 @@ services:
     ports:
       - "7077:7077"
       - "8080:8080"
+    volumes:
+      - delta_data:/delta
 
   spark-worker:
     image: apache/spark:3.5.1
@@ -45,3 +47,20 @@ services:
       spark://spark-master:7077
     ports:
       - "8081:8081"
+    volumes:
+      - delta_data:/delta
+
+  superset:
+    image: apache/superset
+    container_name: superset
+    depends_on:
+      - spark-master
+    ports:
+      - "8088:8088"
+    volumes:
+      - delta_data:/delta
+    environment:
+      SUPERSET_SECRET_KEY: "a23c4947d0a4ce608a36b6a5a546276b2e21812560331b919229031fe0ea2003"
+
+volumes:
+  delta_data:
