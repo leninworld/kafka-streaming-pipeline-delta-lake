@@ -7,7 +7,7 @@ This project streams beauty user events from Kafka into a Delta Lake table with 
 ```mermaid
 flowchart LR
     producer["Local Python producer"] -->|"publishes events"| kafka["Kafka topic: beauty_events"]
-    kafka -->|"consumed by"| streaming["spark-streaming\nStructured Streaming job"]
+    kafka -->|"consumed by"| streaming["spark-streaming\n Structured Streaming job"]
     streaming -->|"writes batches"| delta["Delta table\n/delta/events"]
     register["spark-register"] -->|"registers table metadata"| metastore["Hive metastore"]
     register -->|"points table to"| delta
@@ -154,3 +154,13 @@ docker logs -f spark-thrift
 docker logs spark-register
 docker logs superset
 ```
+
+## Next Improvements
+
+1. Expand the schema in [streaming_job.py](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/spark_jobs/streaming_job.py) so Delta and Superset expose the full producer payload, including product and delivery fields.
+2. Replace the embedded Derby metastore with an external database-backed metastore for better durability.
+3. Add more Spark worker capacity or separate resource pools so `spark-thrift` and `spark-streaming` do not compete on a single worker.
+4. Add stronger health checks and service readiness handling so startup is less timing-sensitive.
+5. Add Delta maintenance tasks such as retention policy, checkpoint review, and compaction strategy as data volume grows.
+6. Make Superset provisioning declarative so the database connection and datasets can be created automatically.
+7. Add a simple smoke test that produces an event, validates registration, and confirms `beauty_events` is queryable.
