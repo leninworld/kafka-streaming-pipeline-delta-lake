@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
 
   zookeeper:
@@ -38,6 +40,7 @@ services:
       - "8080:8080"
     volumes:
       - delta_data:/delta
+      - ./spark_jobs:/opt/spark/jobs
 
   spark-worker:
     image: apache/spark:3.5.1
@@ -53,6 +56,51 @@ services:
       - "8081:8081"
     volumes:
       - delta_data:/delta
+      - ./spark_jobs:/opt/spark/jobs
+
+  spark-streaming:
+    image: apache/spark:3.5.1
+    container_name: spark-streaming
+    restart: unless-stopped
+    depends_on:
+      - kafka
+      - spark-master
+    volumes:
+      - delta_data:/delta
+      - ./spark_jobs:/opt/spark/jobs
+    command: >
+      /opt/spark/bin/spark-submit
+      --master spark://spark-master:7077
+      --packages io.delta:delta-spark_2.12:3.0.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1
+      --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension
+      --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog
+      --conf spark.jars.ivy=/tmp/.ivy2
+      /opt/spark/jobs/streaming_job.py
+
+  spark-thrift:
+    image: apache/spark:3.5.1
+    container_name: spark-thrift
+    restart: unless-stopped
+    depends_on:
+      - spark-master
+    ports:
+      - "10000:10000"
+      - "4040:4040"
+    volumes:
+      - delta_data:/delta
+      - ./spark_jobs:/opt/spark/jobs
+    environment:
+      - SPARK_LOCAL_IP=spark-thrift
+    command: >
+      bash -c "/opt/spark/sbin/start-thriftserver.sh
+      --master spark://spark-master:7077
+      --hiveconf hive.server2.authentication=NOSASL
+      --packages io.delta:delta-spark_2.12:3.0.0
+      --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension
+      --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog
+      --conf spark.sql.warehouse.dir=/delta/warehouse
+      --conf spark.jars.ivy=/tmp/.ivy2
+      && tail -f /dev/null"
 
   superset:
     build:
@@ -61,13 +109,15 @@ services:
     container_name: superset
     restart: unless-stopped
     depends_on:
-      - spark-master
+      - spark-thrift
     ports:
       - "8088:8088"
     volumes:
       - delta_data:/delta
+      - superset_home:/app/superset_home
     environment:
       SUPERSET_SECRET_KEY: "a23c4947d0a4ce608a36b6a5a546276b2e21812560331b919229031fe0ea2003"
 
 volumes:
   delta_data:
+  superset_home:

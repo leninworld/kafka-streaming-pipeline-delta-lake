@@ -2,7 +2,6 @@ FROM apache/superset:latest
 
 USER root
 
-# Install build tools required for thrift / sasl
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
@@ -10,10 +9,15 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Hive / Thrift connectors into Superset environment
 RUN uv pip install \
     pyhive \
     thrift \
     thrift-sasl
 
+COPY superset-init.sh /app/superset-init.sh
+
+RUN chmod +x /app/superset-init.sh
+
 USER superset
+
+ENTRYPOINT ["/app/superset-init.sh"]
