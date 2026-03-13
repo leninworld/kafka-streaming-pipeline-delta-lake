@@ -1,18 +1,20 @@
-from kafka import KafkaProducer
 import json
-import time
 import random
+import time
 from datetime import datetime
 
 from kafka import KafkaProducer
-import json
+
+KAFKA_BOOTSTRAP_SERVERS = ["127.0.0.1:29092"]
+KAFKA_TOPIC = "beauty_events"
+SEND_INTERVAL_SECONDS = 2
 
 producer = KafkaProducer(
-    bootstrap_servers=["127.0.0.1:29092"],
+    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-    api_version=(0,10,1),
+    api_version=(0, 10, 1),
     request_timeout_ms=20000,
-    retries=5
+    retries=5,
 )
 
 usernames = ["alice", "bob", "charlie", "david"]
@@ -55,10 +57,8 @@ addresses = [
 print("Producing beauty product events...")
 
 while True:
-
     product = random.choice(products)
     address = random.choice(addresses)
-
     quantity = random.randint(1, 3)
 
     event = {
@@ -84,10 +84,10 @@ while True:
         }
     }
 
-    producer.send("beauty_events", event)
+    producer.send(KAFKA_TOPIC, event)
 
     print("sent:", event)
 
     producer.flush()
 
-    time.sleep(2)
+    time.sleep(SEND_INTERVAL_SECONDS)

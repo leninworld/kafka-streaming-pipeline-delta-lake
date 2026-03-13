@@ -1,17 +1,24 @@
 from pyspark.sql import SparkSession
 
-spark = SparkSession.builder \
-    .appName("RegisterDeltaTable") \
-    .enableHiveSupport() \
+DATABASE_NAME = "default"
+TABLE_NAME = "beauty_events"
+DELTA_PATH = "/delta/events"
+
+spark = (
+    SparkSession.builder.appName("RegisterDeltaTable")
+    .enableHiveSupport()
     .getOrCreate()
+)
 
-spark.sql("CREATE DATABASE IF NOT EXISTS default")
+spark.sql(f"CREATE DATABASE IF NOT EXISTS {DATABASE_NAME}")
 
-spark.sql("""
-CREATE TABLE IF NOT EXISTS beauty_events
-USING DELTA
-LOCATION '/delta/events'
-""")
+spark.sql(
+    f"""
+    CREATE TABLE IF NOT EXISTS {TABLE_NAME}
+    USING DELTA
+    LOCATION '{DELTA_PATH}'
+    """
+)
 
 print("Delta table registered successfully")
 

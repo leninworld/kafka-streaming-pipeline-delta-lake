@@ -1,66 +1,71 @@
-services:
+# Kafka + Spark + Delta + Superset
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-    ports:
-      - "2181:2181"
+This project streams user events from Kafka into a Delta table with Spark Structured Streaming, registers that table in a Hive metastore, and exposes it through Spark Thrift Server for tools like Superset.
 
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-      - "29092:29092"
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+## Services
 
-  spark-master:
-    image: apache/spark:3.5.1
-    container_name: spark-master
-    command: >
-      /opt/spark/bin/spark-class
-      org.apache.spark.deploy.master.Master
-    ports:
-      - "7077:7077"
-      - "8080:8080"
-    volumes:
-      - delta_data:/delta
+- `zookeeper` and `kafka`: event transport
+- `spark-master` and `spark-worker`: Spark standalone cluster
+- `spark-streaming`: Kafka to Delta writer
+- `hive-metastore`: table metadata service
+- `spark-thrift`: SQL endpoint for BI tools
+- `spark-register`: one-shot job that registers `beauty_events`
+- `superset`: optional BI UI
 
-  spark-worker:
-    image: apache/spark:3.5.1
-    container_name: spark-worker
-    depends_on:
-      - spark-master
-    command: >
-      /opt/spark/bin/spark-class
-      org.apache.spark.deploy.worker.Worker
-      spark://spark-master:7077
-    ports:
-      - "8081:8081"
-    volumes:
-      - delta_data:/delta
+## Start The Stack
 
-  superset:
-    image: apache/superset
-    container_name: superset
-    depends_on:
-      - spark-master
-    ports:
-      - "8088:8088"
-    volumes:
-      - delta_data:/delta
-    environment:
-      SUPERSET_SECRET_KEY: "a23c4947d0a4ce608a36b6a5a546276b2e21812560331b919229031fe0ea2003"
+```bash
+docker compose build spark-master
+docker compose up -d zookeeper kafka hive-metastore spark-master spark-worker
+docker compose up -d spark-thrift
+docker compose up spark-register
+docker compose up -d spark-streaming superset
+```
 
-volumes:
-  delta_data:
+## Produce Test Data
+
+Run the local producer from this repo:
+
+```bash
+python3 kafka_producer_user_events.py
+```
+
+If you want a simple debug consumer on your Mac, use:
+
+```bash
+python3 kafka_consumer_user_events.py
+```
+
+## Query The Table
+
+Use Spark SQL from the `spark-thrift` container:
+
+```bash
+docker exec -it spark-thrift /opt/spark/bin/spark-sql \
+  --conf spark.hadoop.hive.metastore.uris=thrift://hive-metastore:9083 \
+  --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension \
+  --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog
+```
+
+Then run:
+
+```sql
+SHOW TABLES;
+SELECT * FROM beauty_events LIMIT 10;
+```
+
+## Superset Connection
+
+Use Spark Thrift Server as the database:
+
+```text
+hive://spark-thrift:10000/default?auth=NOSASL
+```
+
+If you are connecting from outside Docker, use `localhost:10000` instead of `spark-thrift:10000`.
+
+## Notes
+
+- The metastore uses embedded Derby inside `hive-metastore`.
+- The Delta table lives at `/delta/events`.
+- `spark-streaming` enables schema merge so the Delta table can evolve from an empty initial schema.
