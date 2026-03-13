@@ -39,13 +39,38 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  hive-metastore:
+    image: apache/hive:4.0.0
+    container_name: hive-metastore
+    restart: unless-stopped
+    environment:
+      SERVICE_NAME: metastore
+    ports:
+      - "9083:9083"
+    volumes:
+      - hive_warehouse:/opt/hive/data/warehouse
+    command: >
+      bash -lc "
+      /opt/hive/bin/schematool -dbType derby -initSchema ||
+      /opt/hive/bin/schematool -dbType derby -info;
+      exec /opt/hive/bin/hive --skiphadoopversion --skiphbasecp --service metastore
+      "
+
   spark-master:
-    image: apache/spark:3.5.1
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    image: kafka-spark:3.5.1-postgres
     container_name: spark-master
     restart: unless-stopped
+    environment:
+      CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      SPARK_CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
     command: >
-      /opt/spark/bin/spark-class
-      org.apache.spark.deploy.master.Master
+      bash -lc "
+      chmod 644 /opt/spark/jars/postgresql-42.7.3.jar /opt/spark/jars/delta-spark_2.12-3.0.0.jar /opt/spark/jars/delta-storage-3.0.0.jar;
+      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+      "
     ports:
       - "7077:7077"
       - "8080:8080"
@@ -54,15 +79,19 @@ services:
       - ./spark_jobs:/opt/spark/jobs
 
   spark-worker:
-    image: apache/spark:3.5.1
+    image: kafka-spark:3.5.1-postgres
     container_name: spark-worker
     restart: unless-stopped
+    environment:
+      CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      SPARK_CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
     depends_on:
       - spark-master
     command: >
-      /opt/spark/bin/spark-class
-      org.apache.spark.deploy.worker.Worker
-      spark://spark-master:7077
+      bash -lc "
+      chmod 644 /opt/spark/jars/postgresql-42.7.3.jar /opt/spark/jars/delta-spark_2.12-3.0.0.jar /opt/spark/jars/delta-storage-3.0.0.jar;
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+      "
     ports:
       - "8081:8081"
     volumes:
@@ -70,9 +99,12 @@ services:
       - ./spark_jobs:/opt/spark/jobs
 
   spark-streaming:
-    image: apache/spark:3.5.1
+    image: kafka-spark:3.5.1-postgres
     container_name: spark-streaming
     restart: unless-stopped
+    environment:
+      CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      SPARK_CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
     depends_on:
       - kafka
       - spark-master
@@ -83,18 +115,21 @@ services:
       /opt/spark/bin/spark-submit
       --master spark://spark-master:7077
       --packages io.delta:delta-spark_2.12:3.0.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1
+      --conf spark.jars.ivy=/tmp/.ivy2
       --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension
       --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog
-      --conf spark.jars.ivy=/tmp/.ivy2
       /opt/spark/jobs/streaming_job.py
 
   spark-thrift:
-    image: apache/spark:3.5.1
+    image: kafka-spark:3.5.1-postgres
     container_name: spark-thrift
     restart: unless-stopped
+    environment:
+      CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      SPARK_CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
     depends_on:
       - spark-master
-      - postgres
+      - hive-metastore
     ports:
       - "10000:10000"
       - "4040:4040"
@@ -102,17 +137,27 @@ services:
       - delta_data:/delta
     command: >
       bash -c "
+      chmod 644 /opt/spark/jars/postgresql-42.7.3.jar /opt/spark/jars/delta-spark_2.12-3.0.0.jar /opt/spark/jars/delta-storage-3.0.0.jar;
+      echo 'Waiting for Hive Metastore on hive-metastore:9083...';
+      until bash -lc 'exec 3<>/dev/tcp/hive-metastore/9083' 2>/dev/null; do
+        sleep 2;
+      done;
       /opt/spark/sbin/start-thriftserver.sh
       --master spark://spark-master:7077
-      --packages io.delta:delta-spark_2.12:3.0.0,org.postgresql:postgresql:42.7.3
-      --conf spark.driver.extraClassPath=/tmp/.ivy2/jars/*
-      --conf spark.executor.extraClassPath=/tmp/.ivy2/jars/*
+      --packages io.delta:delta-spark_2.12:3.0.0
+      --jars /opt/spark/jars/delta-spark_2.12-3.0.0.jar,/opt/spark/jars/delta-storage-3.0.0.jar
+      --conf spark.driver.extraClassPath=/opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      --conf spark.executor.extraClassPath=/opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      --conf spark.cores.max=4
+      --conf spark.executor.cores=2
+      --conf spark.hadoop.hive.metastore.uris=thrift://hive-metastore:9083
       --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension
       --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog
       --conf spark.sql.warehouse.dir=/delta/warehouse
       --hiveconf hive.server2.authentication=NOSASL
+      --hiveconf hive.server2.thrift.resultset.default.fetch.size=1000
       --conf spark.jars.ivy=/tmp/.ivy2
-      && tail -f /dev/null
+      && tail -F /opt/spark/logs/spark--org.apache.spark.sql.hive.thriftserver.HiveThriftServer2-1-*.out
       "
 
   superset:
@@ -132,23 +177,33 @@ services:
       SUPERSET_SECRET_KEY: "a23c4947d0a4ce608a36b6a5a546276b2e21812560331b919229031fe0ea2003"
 
   spark-register:
-    image: apache/spark:3.5.1
+    image: kafka-spark:3.5.1-postgres
     container_name: spark-register
+    environment:
+      CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      SPARK_CLASSPATH: /opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
     depends_on:
       - spark-thrift
+      - hive-metastore
     volumes:
       - delta_data:/delta
       - ./spark_jobs:/opt/spark/jobs
     command: >
       bash -c "
-      echo 'Waiting for Spark Thrift...';
-      sleep 30;
+      chmod 644 /opt/spark/jars/postgresql-42.7.3.jar /opt/spark/jars/delta-spark_2.12-3.0.0.jar /opt/spark/jars/delta-storage-3.0.0.jar;
+      echo 'Waiting for Spark Thrift and Hive Metastore...';
+      sleep 60;
   
       /opt/spark/bin/spark-submit
       --master spark://spark-master:7077
       --packages io.delta:delta-spark_2.12:3.0.0
+      --jars /opt/spark/jars/delta-spark_2.12-3.0.0.jar,/opt/spark/jars/delta-storage-3.0.0.jar
+      --conf spark.driver.extraClassPath=/opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      --conf spark.executor.extraClassPath=/opt/spark/jars/postgresql-42.7.3.jar:/opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
+      --conf spark.hadoop.hive.metastore.uris=thrift://hive-metastore:9083
       --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension
       --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog
+      --conf spark.sql.warehouse.dir=/delta/warehouse
       --conf spark.jars.ivy=/tmp/.ivy2
       /opt/spark/jobs/register_delta_table.py
       "
@@ -157,3 +212,4 @@ volumes:
   delta_data:
   superset_home:
   postgres_data:
+  hive_warehouse:

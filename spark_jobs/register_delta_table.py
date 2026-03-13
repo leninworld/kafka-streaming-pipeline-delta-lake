@@ -15,6 +15,4 @@ LOCATION '/delta/events'
 
 print("Delta table registered successfully")
 
-spark.sql("MSCK REPAIR TABLE beauty_events")
-
 spark.stop()

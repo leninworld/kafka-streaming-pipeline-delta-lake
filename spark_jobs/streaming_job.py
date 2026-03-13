@@ -26,6 +26,7 @@ table_df = parsed.select("data.*")
 query = table_df.writeStream \
     .format("delta") \
     .outputMode("append") \
+    .option("mergeSchema", "true") \
     .option("checkpointLocation","/tmp/events_checkpoint") \
     .start("/delta/events")
 
