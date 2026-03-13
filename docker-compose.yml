@@ -3,6 +3,7 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
+    restart: unless-stopped
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
     ports:
@@ -11,6 +12,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
+    restart: unless-stopped
     depends_on:
       - zookeeper
     ports:
@@ -27,6 +29,7 @@ services:
   spark-master:
     image: apache/spark:3.5.1
     container_name: spark-master
+    restart: unless-stopped
     command: >
       /opt/spark/bin/spark-class
       org.apache.spark.deploy.master.Master
@@ -39,6 +42,7 @@ services:
   spark-worker:
     image: apache/spark:3.5.1
     container_name: spark-worker
+    restart: unless-stopped
     depends_on:
       - spark-master
     command: >
@@ -51,8 +55,11 @@ services:
       - delta_data:/delta
 
   superset:
-    image: apache/superset
+    build:
+      context: .
+      dockerfile: Dockerfile.superset
     container_name: superset
+    restart: unless-stopped
     depends_on:
       - spark-master
     ports:
