@@ -6,15 +6,15 @@ This project streams beauty user events from Kafka into a Delta Lake table with 
 
 ```mermaid
 flowchart LR
-    P["Local Python producer"] --> K["Kafka topic: beauty_events"]
-    K --> S["spark-streaming\nStructured Streaming job"]
-    S --> D["Delta table\n/delta/events"]
-    R["spark-register"] --> M["Hive metastore"]
-    R --> D
-    T["spark-thrift"] --> M
-    T --> D
-    U["Superset"] --> T
-    Q["spark-sql / SQL clients"] --> T
+    producer["Local Python producer"] -->|"publishes events"| kafka["Kafka topic: beauty_events"]
+    kafka -->|"consumed by"| streaming["spark-streaming\nStructured Streaming job"]
+    streaming -->|"writes batches"| delta["Delta table\n/delta/events"]
+    register["spark-register"] -->|"registers table metadata"| metastore["Hive metastore"]
+    register -->|"points table to"| delta
+    thrift["spark-thrift"] -->|"reads metadata from"| metastore
+    thrift -->|"queries data from"| delta
+    superset["Superset"] -->|"JDBC / Thrift SQL"| thrift
+    sqlclients["spark-sql / SQL clients"] -->|"JDBC / Thrift SQL"| thrift
 ```
 
 ## Services
