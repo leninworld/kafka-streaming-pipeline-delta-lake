@@ -11,6 +11,7 @@ SEND_INTERVAL_SECONDS = 2
 
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
+    key_serializer=lambda key: key.encode("utf-8"),
     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
     api_version=(0, 10, 1),
     request_timeout_ms=20000,
@@ -57,12 +58,13 @@ addresses = [
 print("Producing beauty product events...")
 
 while True:
+    username = random.choice(usernames)
     product = random.choice(products)
     address = random.choice(addresses)
     quantity = random.randint(1, 3)
 
     event = {
-        "username": random.choice(usernames),
+        "username": username,
         "action": random.choice(actions),
         "timestamp": time.time(),
         "event_date": datetime.now().strftime("%Y%m%d"),
@@ -84,7 +86,7 @@ while True:
         }
     }
 
-    producer.send(KAFKA_TOPIC, event)
+    producer.send(KAFKA_TOPIC, key=username, value=event)
 
     print("sent:", event)
 
