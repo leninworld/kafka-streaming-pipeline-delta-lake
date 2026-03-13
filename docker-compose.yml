@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   zookeeper:
@@ -27,6 +25,19 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  postgres:
+    image: postgres:15
+    container_name: hive-metastore-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   spark-master:
     image: apache/spark:3.5.1
@@ -83,24 +94,26 @@ services:
     restart: unless-stopped
     depends_on:
       - spark-master
+      - postgres
     ports:
       - "10000:10000"
       - "4040:4040"
     volumes:
       - delta_data:/delta
-      - ./spark_jobs:/opt/spark/jobs
-    environment:
-      - SPARK_LOCAL_IP=spark-thrift
     command: >
-      bash -c "/opt/spark/sbin/start-thriftserver.sh
+      bash -c "
+      /opt/spark/sbin/start-thriftserver.sh
       --master spark://spark-master:7077
-      --hiveconf hive.server2.authentication=NOSASL
-      --packages io.delta:delta-spark_2.12:3.0.0
+      --packages io.delta:delta-spark_2.12:3.0.0,org.postgresql:postgresql:42.7.3
+      --conf spark.driver.extraClassPath=/tmp/.ivy2/jars/*
+      --conf spark.executor.extraClassPath=/tmp/.ivy2/jars/*
       --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension
       --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog
       --conf spark.sql.warehouse.dir=/delta/warehouse
+      --hiveconf hive.server2.authentication=NOSASL
       --conf spark.jars.ivy=/tmp/.ivy2
-      && tail -f /dev/null"
+      && tail -f /dev/null
+      "
 
   superset:
     build:
@@ -118,6 +131,29 @@ services:
     environment:
       SUPERSET_SECRET_KEY: "a23c4947d0a4ce608a36b6a5a546276b2e21812560331b919229031fe0ea2003"
 
+  spark-register:
+    image: apache/spark:3.5.1
+    container_name: spark-register
+    depends_on:
+      - spark-thrift
+    volumes:
+      - delta_data:/delta
+      - ./spark_jobs:/opt/spark/jobs
+    command: >
+      bash -c "
+      echo 'Waiting for Spark Thrift...';
+      sleep 30;
+  
+      /opt/spark/bin/spark-submit
+      --master spark://spark-master:7077
+      --packages io.delta:delta-spark_2.12:3.0.0
+      --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension
+      --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog
+      --conf spark.jars.ivy=/tmp/.ivy2
+      /opt/spark/jobs/register_delta_table.py
+      "
+
 volumes:
   delta_data:
   superset_home:
+  postgres_data:
