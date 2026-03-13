@@ -14,6 +14,7 @@ RUN uv pip install \
     thrift \
     thrift-sasl
 
+COPY sitecustomize.py /app/pythonpath/sitecustomize.py
 COPY superset-init.sh /app/superset-init.sh
 
 RUN chmod +x /app/superset-init.sh
