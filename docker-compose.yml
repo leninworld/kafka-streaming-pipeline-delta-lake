@@ -277,6 +277,7 @@ services:
       - "9182:8081"
       - "9183:8082"
     volumes:
+      - ./models/torchserve/demo:/home/model-server/demo
       - ./models/torchserve/model-store:/home/model-server/model-store
       - ./models/torchserve/config:/home/model-server/config
     command: >
