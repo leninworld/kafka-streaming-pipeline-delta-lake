@@ -4,6 +4,12 @@ x-spark-image: &spark-image
     dockerfile: Dockerfile.spark
   image: kafka-spark:3.5.1-delta
 
+x-notebook-image: &notebook-image
+  build:
+    context: .
+    dockerfile: Dockerfile.notebook
+  image: kafka-spark-notebook:3.5.1-delta
+
 x-delta-classpath: &delta-classpath
   CLASSPATH: /opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
   SPARK_CLASSPATH: /opt/spark/jars/delta-spark_2.12-3.0.0.jar:/opt/spark/jars/delta-storage-3.0.0.jar
@@ -67,6 +73,7 @@ services:
       - "8080:8080"
     volumes:
       - delta_data:/delta
+      - ./notebooks:/opt/spark/notebooks
 
   spark-worker:
     image: kafka-spark:3.5.1-delta
@@ -84,6 +91,7 @@ services:
       - "8081:8081"
     volumes:
       - delta_data:/delta
+      - ./notebooks:/opt/spark/notebooks
 
   spark-streaming:
     image: kafka-spark:3.5.1-delta
@@ -96,6 +104,7 @@ services:
       - spark-master
     volumes:
       - delta_data:/delta
+      - ./notebooks:/opt/spark/notebooks
       - ./spark_jobs:/opt/spark/jobs
     command: >
       /opt/spark/bin/spark-submit
@@ -120,6 +129,7 @@ services:
       - "4040:4040"
     volumes:
       - delta_data:/delta
+      - ./notebooks:/opt/spark/notebooks
     command: >
       bash -c "
       echo 'Waiting for Hive Metastore on hive-metastore:9083...';
@@ -170,6 +180,7 @@ services:
       - hive-metastore
     volumes:
       - delta_data:/delta
+      - ./notebooks:/opt/spark/notebooks
       - ./spark_jobs:/opt/spark/jobs
     command: >
       bash -c "
@@ -195,6 +206,94 @@ services:
       --conf spark.jars.ivy=/tmp/.ivy2
       /opt/spark/jobs/register_delta_table.py
       "
+
+  jupyter:
+    <<: *notebook-image
+    container_name: jupyter
+    restart: unless-stopped
+    depends_on:
+      - spark-master
+      - hive-metastore
+      - kafka
+    environment:
+      <<: *delta-classpath
+      SPARK_MASTER_URL: spark://spark-master:7077
+    ports:
+      - "8888:8888"
+    volumes:
+      - delta_data:/delta
+      - ./notebooks:/opt/spark/notebooks
+      - ./spark_jobs:/opt/spark/jobs
+      - ./apps:/opt/apps
+
+  fastapi:
+    <<: *notebook-image
+    container_name: fastapi
+    restart: unless-stopped
+    depends_on:
+      - jupyter
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps:/opt/apps
+      - ./notebooks:/opt/spark/notebooks
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --app-dir /opt/apps/fastapi
+
+  tensorflow-serving:
+    image: tensorflow/serving
+    container_name: tensorflow-serving
+    profiles:
+      - serving
+    restart: unless-stopped
+    ports:
+      - "8500:8500"
+      - "8501:8501"
+    environment:
+      MODEL_NAME: example_model
+      MODEL_BASE_PATH: /models
+    volumes:
+      - ./models/tensorflow:/models
+
+  tf-builder:
+    image: tensorflow/tensorflow:2.13.0
+    profiles:
+      - tools
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+
+  torchserve:
+    image: pytorch/torchserve:latest-cpu
+    container_name: torchserve
+    profiles:
+      - serving
+    restart: unless-stopped
+    ports:
+      - "9181:8080"
+      - "9182:8081"
+      - "9183:8082"
+    volumes:
+      - ./models/torchserve/model-store:/home/model-server/model-store
+      - ./models/torchserve/config:/home/model-server/config
+    command: >
+      torchserve --start --foreground
+      --model-store /home/model-server/model-store
+      --ts-config /home/model-server/config/config.properties
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
 volumes:
   delta_data:

@@ -1,0 +1,53 @@
+_wandb:
+    value:
+        cli_version: 0.22.3
+        e:
+            p0o4nwte64x2dw9fb3dpulg3ddvx8idc:
+                codePath: mlops.ipynb
+                codePathLocal: mlops.ipynb
+                cpu_count: 16
+                cpu_count_logical: 16
+                disk:
+                    /:
+                        total: "62671097856"
+                        used: "43793047552"
+                email: lenin.world@gmail.com
+                executable: /usr/bin/python3
+                host: c05f0e4b8f99
+                memory:
+                    total: "8217124864"
+                os: Linux-6.10.14-linuxkit-aarch64-with-glibc2.29
+                program: mlops.ipynb
+                python: CPython 3.8.10
+                root: /opt/spark/notebooks
+                startedAt: "2026-04-12T05:51:32.327187Z"
+                writerId: p0o4nwte64x2dw9fb3dpulg3ddvx8idc
+        m: []
+        python_version: 3.8.10
+        t:
+            "1":
+                - 5
+                - 53
+                - 105
+            "2":
+                - 5
+                - 53
+                - 105
+            "3":
+                - 2
+                - 15
+                - 16
+            "4": 3.8.10
+            "5": 0.22.3
+            "8":
+                - 1
+            "12": 0.22.3
+            "13": linux-aarch64
+environment:
+    value: local
+model:
+    value: xgboost
+owner:
+    value: marketing-ml
+threshold:
+    value: 0.3

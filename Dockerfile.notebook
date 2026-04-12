@@ -1,0 +1,47 @@
+FROM apache/spark:3.5.1
+
+ARG DELTA_VERSION=3.0.0
+
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-pip tini \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --no-cache-dir \
+    numpy \
+    pandas \
+    scikit-learn \
+    matplotlib \
+    seaborn \
+    "packaging<25" \
+    "platformdirs<4" \
+    xgboost \
+    mlflow \
+    wandb==0.22.3 \
+    dvc \
+    fastapi \
+    uvicorn \
+    evidently \
+    whylogs \
+    whylabs-client \
+    prometheus-client \
+    jupyterlab \
+    delta-spark==${DELTA_VERSION}
+
+ADD https://repo1.maven.org/maven2/io/delta/delta-spark_2.12/${DELTA_VERSION}/delta-spark_2.12-${DELTA_VERSION}.jar /opt/spark/jars/delta-spark_2.12-${DELTA_VERSION}.jar
+ADD https://repo1.maven.org/maven2/io/delta/delta-storage/${DELTA_VERSION}/delta-storage-${DELTA_VERSION}.jar /opt/spark/jars/delta-storage-${DELTA_VERSION}.jar
+
+COPY start-jupyter.sh /usr/local/bin/start-jupyter.sh
+
+RUN chmod 755 /usr/local/bin/start-jupyter.sh \
+    && chmod 644 /opt/spark/jars/delta-spark_2.12-${DELTA_VERSION}.jar /opt/spark/jars/delta-storage-${DELTA_VERSION}.jar \
+    && mkdir -p /home/spark/.local /opt/spark/notebooks \
+    && chown -R spark:root /home/spark /opt/spark/notebooks
+
+USER spark
+
+ENV HOME=/home/spark
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/usr/local/bin/start-jupyter.sh"]

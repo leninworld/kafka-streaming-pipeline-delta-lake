@@ -27,6 +27,8 @@ flowchart LR
 - `hive-metastore`: metadata service backed by embedded Derby
 - `spark-register`: one-shot Spark job that registers `beauty_events` in the metastore
 - `spark-thrift`: Spark SQL Thrift/JDBC endpoint on port `10000`
+- `jupyter`: JupyterLab workspace for creating notebooks on port `8888`
+- `fastapi`: starter inference API on port `8000`
 - `superset`: BI UI on port `8088`
 
 ## Runtime Flow
@@ -52,8 +54,85 @@ Start the core services:
 docker compose up -d zookeeper kafka hive-metastore spark-master spark-worker
 docker compose up -d spark-thrift
 docker compose up spark-register
-docker compose up -d spark-streaming superset
+docker compose up -d spark-streaming jupyter superset
 ```
+
+Open JupyterLab in your browser:
+
+```text
+http://localhost:8888
+```
+
+This local development setup disables the Jupyter token so the notebook opens directly on your machine.
+
+## ML And MLOps Tooling
+
+The notebook image now includes:
+
+- `mlflow` including Model Registry support
+- `wandb`
+- `dvc`
+- `fastapi`
+- `uvicorn`
+- `evidently`
+- `whylogs`
+- `whylabs-client`
+- `prometheus-client`
+
+FastAPI starter endpoint:
+
+```text
+http://localhost:8000/health
+```
+
+FastAPI Prometheus metrics:
+
+```text
+http://localhost:8000/metrics
+```
+
+## Optional Serving And Monitoring Services
+
+TensorFlow Serving, TorchServe, and Prometheus are available through Compose profiles so they do not interfere with the default analytics stack before you add models or monitoring targets.
+
+Start serving tools:
+
+```bash
+docker compose --profile serving up -d tensorflow-serving torchserve
+```
+
+Start Prometheus:
+
+```bash
+docker compose --profile monitoring up -d prometheus
+```
+
+Prometheus UI:
+
+```text
+http://localhost:9090
+```
+
+TensorFlow Serving endpoints:
+
+```text
+gRPC: localhost:8500
+REST: http://localhost:8501
+```
+
+TorchServe endpoints:
+
+```text
+Inference: http://localhost:9181
+Management: http://localhost:9182
+Metrics: http://localhost:9183
+```
+
+Notes:
+
+- TensorFlow Serving expects a SavedModel under [models/tensorflow](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/models/tensorflow).
+- TorchServe expects `.mar` archives in [models/torchserve/model-store](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/models/torchserve/model-store).
+- MLflow Model Registry is part of the installed `mlflow` package. For local notebook work, you can point MLflow to a tracking backend and use the registry APIs directly from Python.
 
 ## Produce Test Data
 
@@ -117,6 +196,8 @@ docker compose up -d --force-recreate superset
 - Delta table location: `/delta/events`
 - Spark warehouse directory: `/delta/warehouse`
 - Streaming checkpoint: `/tmp/events_checkpoint`
+- Local notebooks directory: [notebooks](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/notebooks)
+- Notebook mount inside Spark containers: `/opt/spark/notebooks`
 - Spark jobs mounted into containers from: [spark_jobs](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/spark_jobs)
 
 ## Current Table Schema
@@ -144,6 +225,20 @@ Recreate the Spark services after config changes:
 ```bash
 docker compose up -d --force-recreate spark-master spark-worker spark-thrift spark-streaming
 docker compose up spark-register
+```
+
+Open a shell in a Spark container and access mounted notebooks:
+
+```bash
+docker exec -it spark-master bash
+ls /opt/spark/notebooks
+```
+
+Build or refresh the notebook service after notebook image changes:
+
+```bash
+docker compose build jupyter
+docker compose up -d --force-recreate jupyter
 ```
 
 Tail useful logs:
