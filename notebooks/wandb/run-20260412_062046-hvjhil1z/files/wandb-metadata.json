@@ -1,0 +1,24 @@
+{
+  "os": "Linux-6.10.14-linuxkit-aarch64-with-glibc2.29",
+  "python": "CPython 3.8.10",
+  "startedAt": "2026-04-12T06:20:46.890196Z",
+  "program": "mlops.ipynb",
+  "codePath": "mlops.ipynb",
+  "codePathLocal": "mlops.ipynb",
+  "email": "lenin.world@gmail.com",
+  "root": "/opt/spark/notebooks",
+  "host": "c05f0e4b8f99",
+  "executable": "/usr/bin/python3",
+  "cpu_count": 16,
+  "cpu_count_logical": 16,
+  "disk": {
+    "/": {
+      "total": "62671097856",
+      "used": "46166982656"
+    }
+  },
+  "memory": {
+    "total": "8217124864"
+  },
+  "writerId": "j3d60w6mjhls5jojaat7lmuvgce64k5e"
+}
