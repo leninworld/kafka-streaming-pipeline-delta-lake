@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1776455341783
+current_stage: None
+description: null
+last_updated_timestamp: 1776455341783
+name: telco_customer_churn_lr
+run_id: 7f2801492136448aad3a23ffad9b4548
+run_link: null
+source: file:///opt/spark/notebooks/experiments/mlruns/559037503512253843/7f2801492136448aad3a23ffad9b4548/artifacts/model
+status: READY
+status_message: null
+storage_location: file:///opt/spark/notebooks/experiments/mlruns/559037503512253843/7f2801492136448aad3a23ffad9b4548/artifacts/model
+user_id: null
+version: 5
