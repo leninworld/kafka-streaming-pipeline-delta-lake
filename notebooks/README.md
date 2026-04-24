@@ -29,11 +29,11 @@ This is the validated status of the current repo implementation:
    - Implemented in: [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb)
 
 6. Attribution-window and multi-touch logic depth
-   - Status: Mostly true
+   - Status: True
    - Implemented in:
      - [exposure_conversion_join.ipynb](./exposure_conversion_join.ipynb) | [executed](./exposure_conversion_join.executed.ipynb)
      - [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb)
-   - Note: Explicit attribution-window comparisons are implemented in the dedicated exposure->conversion notebook; additional depth is optional (for example more rule families and deeper segment-level sensitivity studies).
+   - Note: Dedicated exposure->conversion notebook includes explicit attribution-window comparisons and multiple attribution families: last-touch, first-touch, linear, time-decay, U-shape/W-shape, Markov-style removal proxy, and Shapley-style proxy, with segment sensitivity analysis.
 
 7. Budget allocation optimization is required
    - Status: True
@@ -41,8 +41,8 @@ This is the validated status of the current repo implementation:
    - Note: This notebook focuses on channel KPI reporting (ROI/ROAS/CPA), budget recommendation, and visual summary.
 
 Overall repo state:
-- Strong coverage exists for uplift, signal-loss analysis, match-rate optimization, exposure->conversion measurement, and budget optimization.
-- Remaining work is optional depth expansion (for example position-based/U-shape and Markov/Shapley-style attribution, plus deeper segment sensitivity slices).
+- Strong coverage exists for uplift, signal-loss analysis, match-rate optimization, exposure->conversion measurement, attribution-rule depth, and budget optimization.
+- Remaining work is optional tuning/expansion by business context (for example market-specific constraints, richer lag assumptions, and production monitoring slices).
 
 ## 1) Uplift: Did campaign actually work?
 
