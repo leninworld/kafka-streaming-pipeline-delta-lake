@@ -5,7 +5,9 @@ This file maps each real-world problem to the notebook that implements it, with 
 ## 1) Uplift: Did campaign actually work?
 
 - Problem: Which users convert because of campaign treatment?
-- Primary notebook: `telco_customer_churn_marketing.ipynb`
+- Notebook links:
+  - Source: [telco_customer_churn_marketing.ipynb](./telco_customer_churn_marketing.ipynb)
+  - Executed: [telco_customer_churn_marketing.executed.ipynb](./telco_customer_churn_marketing.executed.ipynb)
 - Dataset used: Hillstrom Email Campaign (in notebook flow)
 - Status: Done
 - Implemented:
@@ -18,8 +20,11 @@ This file maps each real-world problem to the notebook that implements it, with 
 ## 2) Signal Loss / Data Quality Impact: Why is measurement broken?
 
 - Problem: How much performance drops when important signals are missing.
-- Primary notebook: `identity_resolution.ipynb` (explicit signal-loss and feature-completeness sections)
-- Secondary notebook: `telco_customer_churn_marketing.ipynb` (discussion/context)
+- Notebook links:
+  - Primary source: [identity_resolution.ipynb](./identity_resolution.ipynb)
+  - Primary executed: [identity_resolution.executed.ipynb](./identity_resolution.executed.ipynb)
+  - Secondary source: [telco_customer_churn_marketing.ipynb](./telco_customer_churn_marketing.ipynb)
+  - Secondary executed: [telco_customer_churn_marketing.executed.ipynb](./telco_customer_churn_marketing.executed.ipynb)
 - Status: Done
 - Implemented:
   - Artificially reduced signal completeness
@@ -30,7 +35,9 @@ This file maps each real-world problem to the notebook that implements it, with 
 ## 3) Budget Allocation Optimization: Where should I spend?
 
 - Problem: Maximize ROI under budget constraint.
-- Primary notebook: `marketing_attribution.ipynb`
+- Notebook links:
+  - Source: [marketing_attribution.ipynb](./marketing_attribution.ipynb)
+  - Executed: [marketing_attribution.executed.ipynb](./marketing_attribution.executed.ipynb)
 - Status: Done
 - Implemented:
   - Attribution-style channel contribution
@@ -41,7 +48,9 @@ This file maps each real-world problem to the notebook that implements it, with 
 ## 4) Match Rate Optimization (Identity Quality): Why low match %?
 
 - Problem: Low identity match rate and what drives it.
-- Primary notebook: `identity_resolution.ipynb`
+- Notebook links:
+  - Source: [identity_resolution.ipynb](./identity_resolution.ipynb)
+  - Executed: [identity_resolution.executed.ipynb](./identity_resolution.executed.ipynb)
 - Dataset style: Synthetic identity-resolution records with controlled missingness
 - Status: Done
 - Implemented:
@@ -53,7 +62,9 @@ This file maps each real-world problem to the notebook that implements it, with 
 ## 5) Cross-Channel User Stitching: How users move across channels?
 
 - Problem: Same user appears across devices/channels and needs unified journey.
-- Primary notebook: `identity_resolution.ipynb`
+- Notebook links:
+  - Source: [identity_resolution.ipynb](./identity_resolution.ipynb)
+  - Executed: [identity_resolution.executed.ipynb](./identity_resolution.executed.ipynb)
 - Status: Done (core stitching flow)
 - Implemented:
   - Group records into resolved entities
@@ -63,9 +74,8 @@ This file maps each real-world problem to the notebook that implements it, with 
 
 ## Quick Notebook Index
 
-- `telco_customer_churn_marketing.ipynb`: churn + uplift + calibration + segmentation
-- `marketing_attribution.ipynb`: attribution + ROI + budget allocation
-- `ctr_calibration.ipynb`: CTR modeling + calibration + bidding impact simulation
-- `identity_resolution.ipynb`: record linkage + match rate + signal loss + user stitching
-- `mlops.ipynb`: experiment tracking, registry, serving, and monitoring concepts
-
+- [telco_customer_churn_marketing.ipynb](./telco_customer_churn_marketing.ipynb) | [executed](./telco_customer_churn_marketing.executed.ipynb): churn + uplift + calibration + segmentation
+- [marketing_attribution.ipynb](./marketing_attribution.ipynb) | [executed](./marketing_attribution.executed.ipynb): attribution + ROI + budget allocation
+- [ctr_calibration.ipynb](./ctr_calibration.ipynb) | [executed](./ctr_calibration.executed.ipynb): CTR modeling + calibration + bidding impact simulation
+- [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb): record linkage + match rate + signal loss + user stitching
+- [mlops.ipynb](./mlops.ipynb): experiment tracking, registry, serving, and monitoring concepts
