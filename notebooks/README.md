@@ -33,15 +33,16 @@ This is the validated status of the current repo implementation:
    - Implemented in:
      - [exposure_conversion_join.ipynb](./exposure_conversion_join.ipynb) | [executed](./exposure_conversion_join.executed.ipynb)
      - [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb)
-   - Note: Explicit attribution-window comparisons are now implemented in the dedicated exposure->conversion notebook; additional depth can still be added (for example more rule families and segment-level sensitivity studies).
+   - Note: Explicit attribution-window comparisons are implemented in the dedicated exposure->conversion notebook; additional depth is optional (for example more rule families and deeper segment-level sensitivity studies).
 
 7. Budget allocation optimization is required
    - Status: True
    - Implemented in: [marketing_attribution.ipynb](./marketing_attribution.ipynb) | [executed](./marketing_attribution.executed.ipynb)
+   - Note: This notebook focuses on channel KPI reporting (ROI/ROAS/CPA), budget recommendation, and visual summary.
 
 Overall repo state:
-- Strong coverage already exists for uplift, signal-loss analysis, match-rate optimization, and budget optimization.
-- Main remaining gap is deeper attribution-window methodology expansion (for example adding more rule variants and sensitivity slices by segment/market).
+- Strong coverage exists for uplift, signal-loss analysis, match-rate optimization, exposure->conversion measurement, and budget optimization.
+- Remaining work is optional depth expansion (for example position-based/U-shape and Markov/Shapley-style attribution, plus deeper segment sensitivity slices).
 
 ## 1) Uplift: Did campaign actually work?
 
@@ -82,8 +83,9 @@ Overall repo state:
 - Status: Done
 - Implemented:
   - Attribution-style channel contribution
-  - ROI estimation by channel
+  - ROI/ROAS/CPA-style KPI reporting
   - Budget allocation recommendation
+  - Visual summary for channel planning
 - Output: Channel spend recommendation based on constrained optimization logic.
 
 ## 4) Match Rate Optimization (Identity Quality): Why low match %?
@@ -116,8 +118,8 @@ Overall repo state:
 ## Quick Notebook Index
 
 - [telco_customer_churn_marketing.ipynb](./telco_customer_churn_marketing.ipynb) | [executed](./telco_customer_churn_marketing.executed.ipynb): churn + uplift + calibration + segmentation
-- [marketing_attribution.ipynb](./marketing_attribution.ipynb) | [executed](./marketing_attribution.executed.ipynb): attribution + ROI + budget allocation
-- [exposure_conversion_join.ipynb](./exposure_conversion_join.ipynb) | [executed](./exposure_conversion_join.executed.ipynb): real-world exposure->conversion joins + attribution window comparisons
+- [marketing_attribution.ipynb](./marketing_attribution.ipynb) | [executed](./marketing_attribution.executed.ipynb): channel reporting (ROI/ROAS/CPA) + budget recommendation + visual summary
+- [exposure_conversion_join.ipynb](./exposure_conversion_join.ipynb) | [executed](./exposure_conversion_join.executed.ipynb): event-level exposure->conversion joins + attribution window/rule sensitivity
 - [ctr_calibration.ipynb](./ctr_calibration.ipynb) | [executed](./ctr_calibration.executed.ipynb): CTR modeling + calibration + bidding impact simulation
 - [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb): record linkage + match rate + signal loss + user stitching
 - [mlops.ipynb](./mlops.ipynb): experiment tracking, registry, serving, and monitoring concepts
