@@ -30,7 +30,10 @@ This is the validated status of the current repo implementation:
 
 6. Attribution-window and multi-touch logic depth
    - Status: Mostly true
-   - Note: Multi-touch stitching is implemented, but explicit attribution-window method comparisons (for example last-touch vs time-decay) are not yet deeply implemented in attribution workflow.
+   - Implemented in:
+     - [exposure_conversion_join.ipynb](./exposure_conversion_join.ipynb) | [executed](./exposure_conversion_join.executed.ipynb)
+     - [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb)
+   - Note: Explicit attribution-window comparisons are now implemented in the dedicated exposure->conversion notebook; additional depth can still be added (for example more rule families and segment-level sensitivity studies).
 
 7. Budget allocation optimization is required
    - Status: True
