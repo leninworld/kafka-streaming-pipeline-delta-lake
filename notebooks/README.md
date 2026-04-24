@@ -2,6 +2,43 @@
 
 This file maps each real-world problem to the notebook that implements it, with current status and what is covered.
 
+## Summary
+
+This is the validated status of the current repo implementation:
+
+1. Identity graph product build vs DS scope
+   - Status: True
+   - Note: Rebuilding a production identity graph is product/platform scope; evaluating identity outputs is DS scope.
+
+2. Match rate analysis and optimization as the right DS abstraction
+   - Status: True
+   - Implemented in: [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb)
+
+3. Dedicated exposure -> conversion join workflow is needed
+   - Status: Partly true
+   - Note: Join/conversion-related pieces exist, but there is not yet a dedicated, explicit measurement notebook with windowed exposure-to-conversion join outputs.
+
+4. Incremental lift / uplift is a core requirement
+   - Status: True
+   - Implemented in: [telco_customer_churn_marketing.ipynb](./telco_customer_churn_marketing.ipynb) | [executed](./telco_customer_churn_marketing.executed.ipynb)
+   - Coverage: Hillstrom dataset, T-learner, X-learner, Qini curve, decile analysis.
+
+5. Signal loss / data quality impact analysis is required
+   - Status: True
+   - Implemented in: [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb)
+
+6. Attribution-window and multi-touch logic depth
+   - Status: Mostly true
+   - Note: Multi-touch stitching is implemented, but explicit attribution-window method comparisons (for example last-touch vs time-decay) are not yet deeply implemented in attribution workflow.
+
+7. Budget allocation optimization is required
+   - Status: True
+   - Implemented in: [marketing_attribution.ipynb](./marketing_attribution.ipynb) | [executed](./marketing_attribution.executed.ipynb)
+
+Overall repo state:
+- Strong coverage already exists for uplift, signal-loss analysis, match-rate optimization, and budget optimization.
+- Main remaining gap is a dedicated exposure->conversion join notebook and deeper attribution-window comparison logic.
+
 ## 1) Uplift: Did campaign actually work?
 
 - Problem: Which users convert because of campaign treatment?
