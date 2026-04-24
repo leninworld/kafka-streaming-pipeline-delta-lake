@@ -15,8 +15,9 @@ This is the validated status of the current repo implementation:
    - Implemented in: [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb)
 
 3. Dedicated exposure -> conversion join workflow is needed
-   - Status: Partly true
-   - Note: Join/conversion-related pieces exist, but there is not yet a dedicated, explicit measurement notebook with windowed exposure-to-conversion join outputs.
+   - Status: Addressed
+   - Implemented in: [exposure_conversion_join.ipynb](./exposure_conversion_join.ipynb) | [executed](./exposure_conversion_join.executed.ipynb)
+   - Note: Dedicated measurement notebook now includes explicit windowed exposure->conversion joins and attribution-window comparison.
 
 4. Incremental lift / uplift is a core requirement
    - Status: True
@@ -37,7 +38,7 @@ This is the validated status of the current repo implementation:
 
 Overall repo state:
 - Strong coverage already exists for uplift, signal-loss analysis, match-rate optimization, and budget optimization.
-- Main remaining gap is a dedicated exposure->conversion join notebook and deeper attribution-window comparison logic.
+- Main remaining gap is deeper attribution-window methodology expansion (for example adding more rule variants and sensitivity slices by segment/market).
 
 ## 1) Uplift: Did campaign actually work?
 
@@ -113,6 +114,7 @@ Overall repo state:
 
 - [telco_customer_churn_marketing.ipynb](./telco_customer_churn_marketing.ipynb) | [executed](./telco_customer_churn_marketing.executed.ipynb): churn + uplift + calibration + segmentation
 - [marketing_attribution.ipynb](./marketing_attribution.ipynb) | [executed](./marketing_attribution.executed.ipynb): attribution + ROI + budget allocation
+- [exposure_conversion_join.ipynb](./exposure_conversion_join.ipynb) | [executed](./exposure_conversion_join.executed.ipynb): real-world exposure->conversion joins + attribution window comparisons
 - [ctr_calibration.ipynb](./ctr_calibration.ipynb) | [executed](./ctr_calibration.executed.ipynb): CTR modeling + calibration + bidding impact simulation
 - [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb): record linkage + match rate + signal loss + user stitching
 - [mlops.ipynb](./mlops.ipynb): experiment tracking, registry, serving, and monitoring concepts
