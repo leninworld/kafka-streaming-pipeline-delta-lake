@@ -54,3 +54,7 @@ checkpoint/
 notebooks/data/avazu_x1/
 notebooks/data/avazu_x1/**
 notebooks/data/avazu_x1.zip
+notebooks/data/criteo_attribution_dataset.tsv.gz
+notebooks/data/*.tsv.gz
+notebooks/data/*.zip
+notebooks/data/*.libsvm
