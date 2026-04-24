@@ -47,3 +47,10 @@ checkpoint/
 # Jupyter
 # ----------------------
 .ipynb_checkpoints/
+
+# ----------------------
+# Large local datasets (do not commit)
+# ----------------------
+notebooks/data/avazu_x1/
+notebooks/data/avazu_x1/**
+notebooks/data/avazu_x1.zip

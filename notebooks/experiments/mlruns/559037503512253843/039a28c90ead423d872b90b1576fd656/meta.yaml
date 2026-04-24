@@ -1,0 +1,15 @@
+artifact_uri: file:///opt/spark/notebooks/experiments/mlruns/559037503512253843/039a28c90ead423d872b90b1576fd656/artifacts
+end_time: 1776664087982
+entry_point_name: ''
+experiment_id: '559037503512253843'
+lifecycle_stage: active
+run_id: 039a28c90ead423d872b90b1576fd656
+run_name: churn-model-evaluation
+run_uuid: 039a28c90ead423d872b90b1576fd656
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776664085301
+status: 3
+tags: []
+user_id: spark
