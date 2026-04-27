@@ -65,20 +65,6 @@ http://localhost:8888
 
 This local development setup disables the Jupyter token so the notebook opens directly on your machine.
 
-## Recommended Notebook Learning Order
-
-Here is the recommended order to learn in this repo:
-
-1. [notebooks/README.md](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/notebooks/README.md) for the overview and problem map.
-2. [notebooks/identity_resolution.ipynb](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/notebooks/identity_resolution.ipynb) for identity graph concepts, match rate, signal loss, and stitching.
-3. [notebooks/exposure_conversion_join.ipynb](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/notebooks/exposure_conversion_join.ipynb) for exposure to conversion joins and attribution windows/rules.
-4. [notebooks/marketing_attribution.ipynb](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/notebooks/marketing_attribution.ipynb) for channel attribution, ROI/ROAS/CPA, and budget allocation.
-5. [notebooks/ctr_calibration.ipynb](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/notebooks/ctr_calibration.ipynb) for CTR modeling, calibration, and bidding impact.
-6. [notebooks/telco_customer_churn_marketing.ipynb](/Users/leninmookiah/Downloads/workspace/kafka-spark-docker/notebooks/telco_customer_churn_marketing.ipynb) for uplift modeling, T/X/S learners, Qini, and deciles.
-
-This flow builds logically:
-identity -> joins -> attribution -> optimization/reporting -> modeling/calibration -> uplift.
-
 ## ML And MLOps Tooling
 
 The notebook image now includes:
