@@ -2,6 +2,20 @@
 
 This file maps each real-world problem to the notebook that implements it, with current status and what is covered.
 
+## Recommended Learning Order
+
+Use this order if you are learning end-to-end from identity and measurement foundations to optimization and uplift:
+
+1. [README.md](./README.md): overview and problem map.
+2. [identity_resolution.ipynb](./identity_resolution.ipynb) | [executed](./identity_resolution.executed.ipynb): identity graph concepts, match rate, signal loss, and stitching.
+3. [exposure_conversion_join.ipynb](./exposure_conversion_join.ipynb) | [executed](./exposure_conversion_join.executed.ipynb): exposure to conversion joins and attribution windows/rules.
+4. [marketing_attribution.ipynb](./marketing_attribution.ipynb) | [executed](./marketing_attribution.executed.ipynb): channel attribution, ROI/ROAS/CPA, and budget allocation.
+5. [ctr_calibration.ipynb](./ctr_calibration.ipynb) | [executed](./ctr_calibration.executed.ipynb): CTR modeling, calibration, and bidding impact.
+6. [telco_customer_churn_marketing.ipynb](./telco_customer_churn_marketing.ipynb) | [executed](./telco_customer_churn_marketing.executed.ipynb): uplift modeling, T/X/S learners, Qini, and deciles.
+
+Flow rationale:
+identity -> joins -> attribution -> optimization/reporting -> modeling/calibration -> uplift
+
 ## Summary
 
 This is the validated status of the current repo implementation:
